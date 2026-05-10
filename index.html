@@ -554,10 +554,16 @@
     return list.filter(t => !t.completed).length;
   }
 
+  let nextId = 1;
+  function genId() {
+    nextId += 1;
+    return Date.now() * 1000 + (nextId % 1000);
+  }
+
   function addTask(bucket) {
     if (!ui.newTaskText.trim()) return;
     const newTask = {
-      id: Date.now() + Math.random(),
+      id: genId(),
       text: ui.newTaskText.trim(),
       priority: ui.newTaskPriority,
       completed: false,
@@ -609,6 +615,7 @@
   }
 
   function toggleComplete(id, bucket) {
+    id = Number(id);
     if (bucket === 'today') {
       const task = state.today.find(t => t.id === id);
       if (!task) return;
@@ -625,6 +632,7 @@
   }
 
   function deleteTask(id, bucket) {
+    id = Number(id);
     if (bucket === 'today') {
       state.today = state.today.filter(t => t.id !== id);
       state.lockedIds = state.lockedIds.filter(lid => lid !== id);
@@ -658,6 +666,7 @@
   }
 
   function moveTask(id, fromBucket) {
+    id = Number(id);
     if (fromBucket === 'today') {
       const task = state.today.find(t => t.id === id);
       if (!task) return;
@@ -677,7 +686,6 @@
           state.today = state.today.filter(t => t.id !== lowest.id).concat(task);
           state.stretch = state.stretch.filter(t => t.id !== id).concat(lowest);
         } else {
-          // Can't move, priority not high enough
           return;
         }
       } else {
@@ -754,10 +762,10 @@
 
     return `<div class="task-row ${task.completed ? 'completed' : ''}"
       draggable="${!task.completed}"
-      ondragstart="handleDragStart(event, ${task.id}, '${bucket}')"
+      ondragstart="handleDragStart(event, '${task.id}', '${bucket}')"
       ondragend="handleDragEnd()">
       <div class="task-checkbox ${task.completed ? 'checked' : ''}"
-        onclick="toggleComplete(${task.id}, '${bucket}')">
+        onclick="toggleComplete('${task.id}', '${bucket}')">
         ${task.completed ? '<span class="check-mark">✓</span>' : ''}
       </div>
       <div class="priority-badge" style="background: ${P.bg}; color: ${P.color};" title="${escapeHtml(P.label)}">
@@ -766,14 +774,15 @@
       ${isLocked ? '<span class="task-locked">●</span>' : ''}
       <span class="task-text">${escapeHtml(task.text)}</span>
       <div class="task-actions">
-        <button class="move-btn" onclick="moveTask(${task.id}, '${bucket}')" title="Move bucket">${moveLabel}</button>
-        <button class="icon-btn" onclick="startEdit(${task.id}, '${bucket}')" title="Edit">✏️</button>
-        <button class="icon-btn" onclick="deleteTask(${task.id}, '${bucket}')" title="Delete">🗑</button>
+        <button class="move-btn" onclick="moveTask('${task.id}', '${bucket}')" title="Move bucket">${moveLabel}</button>
+        <button class="icon-btn" onclick="startEdit('${task.id}', '${bucket}')" title="Edit">✏️</button>
+        <button class="icon-btn" onclick="deleteTask('${task.id}', '${bucket}')" title="Delete">🗑</button>
       </div>
     </div>`;
   }
 
   function startEditById(id, bucket) {
+    id = Number(id);
     const list = bucket === 'today' ? state.today : state.stretch;
     const task = list.find(t => t.id === id);
     if (task) startEdit(task);
@@ -895,6 +904,7 @@
 
   // Drag and drop
   window.handleDragStart = (e, id, bucket) => {
+    id = Number(id);
     const list = bucket === 'today' ? state.today : state.stretch;
     const task = list.find(t => t.id === id);
     ui.draggedTask = { task, bucket };
