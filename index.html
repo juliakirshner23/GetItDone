@@ -154,8 +154,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 32px;
-    padding: 0 4px;
+    min-height: 32px;
+    padding: 4px;
     font-family: 'Caveat', cursive;
     font-size: 22px;
     color: #2c1810;
@@ -205,9 +205,9 @@
 
   .task-text {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
+    word-break: break-word;
+    line-height: 1.2;
   }
 
   .task-locked {
@@ -400,17 +400,20 @@
   /* Move buttons for mobile (since drag-drop is finicky on touch) */
   .move-btn {
     background: transparent;
-    border: 1px solid currentColor;
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-family: 'Special Elite', monospace;
-    font-size: 9px;
-    letter-spacing: 0.5px;
+    border: none;
     cursor: pointer;
     color: #6b4423;
-    text-transform: uppercase;
+    font-size: 16px;
+    padding: 4px;
+    min-width: 28px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
   }
 
+  .move-btn:active { background: rgba(0,0,0,0.1); }
   .notepad-stretch .move-btn { color: #4a2c6b; }
 </style>
 </head>
@@ -758,7 +761,7 @@
     }
     const P = PRIORITIES[task.priority];
     const isLocked = state.lockedIds.includes(task.id) && !task.completed;
-    const moveLabel = bucket === 'today' ? '→ Stretch' : '→ Today';
+    const moveLabel = '⇄';
 
     return `<div class="task-row ${task.completed ? 'completed' : ''}"
       draggable="${!task.completed}"
@@ -774,7 +777,7 @@
       ${isLocked ? '<span class="task-locked">●</span>' : ''}
       <span class="task-text">${escapeHtml(task.text)}</span>
       <div class="task-actions">
-        <button class="move-btn" onclick="moveTask('${task.id}', '${bucket}')" title="Move bucket">${moveLabel}</button>
+        <button class="move-btn" onclick="moveTask('${task.id}', '${bucket}')" title="${bucket === 'today' ? 'Move to Stretch' : 'Move to Today'}">${moveLabel}</button>
         <button class="icon-btn" onclick="startEdit('${task.id}', '${bucket}')" title="Edit">✏️</button>
         <button class="icon-btn" onclick="deleteTask('${task.id}', '${bucket}')" title="Delete">🗑</button>
       </div>
