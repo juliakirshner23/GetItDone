@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>The List</title>
+
+<!-- PWA / iOS Home Screen tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The List">
+<meta name="theme-color" content="#2d2419">
+
+<!-- Inline SVG favicon and apple-touch-icon -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fdf6d8'/%3E%3Cline x1='22' y1='10' x2='22' y2='90' stroke='%23dc3232' stroke-width='1.5'/%3E%3Cline x1='30' y1='35' x2='85' y2='35' stroke='%234664aa' stroke-width='1' opacity='0.4'/%3E%3Cline x1='30' y1='50' x2='85' y2='50' stroke='%234664aa' stroke-width='1' opacity='0.4'/%3E%3Cline x1='30' y1='65' x2='85' y2='65' stroke='%234664aa' stroke-width='1' opacity='0.4'/%3E%3Cpath d='M32 50 L42 60 L62 38' stroke='%232c1810' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='32' fill='%23fdf6d8'/%3E%3Cline x1='40' y1='20' x2='40' y2='160' stroke='%23dc3232' stroke-width='2.5'/%3E%3Cline x1='55' y1='65' x2='155' y2='65' stroke='%234664aa' stroke-width='1.5' opacity='0.4'/%3E%3Cline x1='55' y1='90' x2='155' y2='90' stroke='%234664aa' stroke-width='1.5' opacity='0.4'/%3E%3Cline x1='55' y1='115' x2='155' y2='115' stroke='%234664aa' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M58 90 L75 107 L115 70' stroke='%232c1810' stroke-width='8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Special+Elite&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: linear-gradient(135deg, #2d2419 0%, #3d3025 100%);
+    min-height: 100vh;
+    font-family: 'Caveat', 'Bradley Hand', cursive;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom) 12px;
+    padding-top: calc(env(safe-area-inset-top) + 16px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 40px);
+  }
+
+  .container { max-width: 480px; margin: 0 auto; }
+
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #f5e6c8;
+  }
+
+  .app-title {
+    font-family: 'Caveat', cursive;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    color: #f5e6c8;
+  }
+
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 6px 14px;
+    background: rgba(245, 230, 200, 0.1);
+    border: 1px solid rgba(245, 230, 200, 0.2);
+    border-radius: 20px;
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #f5e6c8;
+  }
+
+  .streak-emoji { font-size: 18px; }
+
+  .notepad {
+    position: relative;
+    border-radius: 4px;
+    padding: 24px 20px 20px 44px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.3), 0 20px 40px rgba(0,0,0,0.2);
+    background-size: 100% 32px;
+    background-position: 0 38px;
+  }
+
+  .notepad-today {
+    background-color: #fdf6d8;
+    background-image:
+      repeating-linear-gradient(transparent, transparent 31px, rgba(70, 100, 150, 0.25) 31px, rgba(70, 100, 150, 0.25) 32px),
+      radial-gradient(ellipse at top left, rgba(0,0,0,0.04), transparent 50%);
+  }
+
+  .notepad-stretch {
+    background-color: #ebe1f4;
+    background-image:
+      repeating-linear-gradient(transparent, transparent 31px, rgba(100, 70, 150, 0.25) 31px, rgba(100, 70, 150, 0.25) 32px),
+      radial-gradient(ellipse at top left, rgba(0,0,0,0.04), transparent 50%);
+  }
+
+  .notepad::before {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 0;
+    bottom: 0;
+    width: 1.5px;
+    background: rgba(220, 50, 50, 0.5);
+  }
+
+  .notepad::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 18px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.08), transparent);
+    border-radius: 4px 4px 0 0;
+    pointer-events: none;
+  }
+
+  .notepad-header {
+    font-family: 'Special Elite', monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6b4423;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .notepad-stretch .notepad-header { color: #4a2c6b; }
+
+  .notepad-title {
+    font-family: 'Caveat', cursive;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    color: #2c1810;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .notepad-stretch .notepad-title { color: #2a1845; }
+
+  .counter {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    color: #6b4423;
+    opacity: 0.7;
+  }
+
+  .notepad-stretch .counter { color: #4a2c6b; }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 4px;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: #2c1810;
+    cursor: grab;
+    transition: background 0.15s;
+    border-radius: 3px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .task-row.completed .task-text {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+
+  .task-row.dragging {
+    opacity: 0.4;
+  }
+
+  .task-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #6b4423;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    background: transparent;
+    transition: all 0.15s;
+  }
+
+  .notepad-stretch .task-checkbox { border-color: #4a2c6b; }
+  .task-checkbox.checked { background: #6b4423; }
+  .notepad-stretch .task-checkbox.checked { background: #4a2c6b; }
+
+  .check-mark {
+    color: #fdf6d8;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .notepad-stretch .check-mark { color: #ebe1f4; }
+
+  .task-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-locked {
+    color: #dc2626;
+    margin-right: 2px;
+    font-size: 10px;
+  }
+
+  .priority-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 2px;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: #6b4423;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    font-size: 14px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .icon-btn:active { background: rgba(0,0,0,0.1); }
+  .notepad-stretch .icon-btn { color: #4a2c6b; }
+
+  .add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 4px;
+    margin-top: 4px;
+    cursor: pointer;
+    color: rgba(44, 24, 16, 0.5);
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-style: italic;
+  }
+
+  .add-row:active { color: #2c1810; }
+  .notepad-stretch .add-row { color: rgba(42, 24, 69, 0.5); }
+  .notepad-stretch .add-row:active { color: #2a1845; }
+
+  .input-row {
+    padding: 8px 4px;
+    margin-top: 4px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+  }
+
+  .input-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .task-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: #2c1810;
+    padding: 4px 0;
+    border-bottom: 1.5px dashed rgba(107, 68, 35, 0.4);
+  }
+
+  .priority-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .priority-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 2px;
+    background: rgba(255,255,255,0.5);
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Special Elite', monospace;
+    font-size: 8px;
+    color: #2c1810;
+    text-align: center;
+    line-height: 1.1;
+    min-height: 44px;
+  }
+
+  .priority-option.active {
+    border-color: currentColor;
+    background: rgba(255,255,255,0.85);
+  }
+
+  .priority-option .icon {
+    font-size: 14px;
+  }
+
+  .submit-btn {
+    background: #2c1810;
+    color: #fdf6d8;
+    border: none;
+    padding: 8px 14px;
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .notepad-stretch .submit-btn { background: #2a1845; color: #ebe1f4; }
+
+  .message-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .message-card {
+    background: #fdf6d8;
+    padding: 32px 24px;
+    border-radius: 6px;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    transform: rotate(-1deg);
+    background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(70, 100, 150, 0.2) 31px, rgba(70, 100, 150, 0.2) 32px);
+  }
+
+  .message-text {
+    font-family: 'Caveat', cursive;
+    font-size: 28px;
+    color: #2c1810;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  .message-dismiss {
+    background: #2c1810;
+    color: #fdf6d8;
+    border: none;
+    padding: 12px 24px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+
+  .drop-zone-active {
+    outline: 3px dashed rgba(107, 68, 35, 0.5);
+    outline-offset: -8px;
+  }
+
+  .notepad-stretch.drop-zone-active {
+    outline-color: rgba(74, 44, 107, 0.5);
+  }
+
+  /* Move buttons for mobile (since drag-drop is finicky on touch) */
+  .move-btn {
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    color: #6b4423;
+    text-transform: uppercase;
+  }
+
+  .notepad-stretch .move-btn { color: #4a2c6b; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+  // ============ STATE ============
+  const PRIORITIES = {
+    4: { label: 'Do It Now!', color: '#dc2626', bg: '#fee2e2', icon: '🔥' },
+    3: { label: 'Actually Important', color: '#a16207', bg: '#fef3c7', icon: '⚡' },
+    2: { label: 'Meah', color: '#2563eb', bg: '#dbeafe', icon: '🌊' },
+    1: { label: 'Would be Nice', color: '#6b7280', bg: '#f3f4f6', icon: '🌱' },
+  };
+
+  const SHAME_MESSAGES = [
+    "Oh look, yesterday's promises gathering dust. Cute.",
+    "These tasks aren't going to do themselves. Or maybe they are. Pathetic either way.",
+    "Procrastination called. It says you're its favorite.",
+    "Your future self is judging you. Hard.",
+    "Tasks left undone are just dreams you gave up on.",
+    "The list is laughing at you now.",
+    "Future you is cleaning up past you's mess. Again.",
+    "That to-do is now a to-don't-tell-anyone.",
+    "The tasks aged. You did not improve.",
+  ];
+
+  const MOTIVATION_MESSAGES = [
+    "New day, fresh start. You've got this.",
+    "Yesterday's incomplete is today's opportunity.",
+    "Small steps still move you forward. Take one.",
+    "The tasks remain because you're still capable of finishing them.",
+    "Begin again. That's the whole secret.",
+    "Done is better than perfect. Just start.",
+    "Today's the day you stop letting these linger.",
+  ];
+
+  const STREAK_VISUALS = [
+    { min: 0, emoji: '🌱', label: 'Just starting' },
+    { min: 1, emoji: '🔥', label: 'On fire!' },
+    { min: 3, emoji: '🚀', label: 'Lift off!' },
+    { min: 7, emoji: '⚡', label: 'Unstoppable' },
+    { min: 14, emoji: '👑', label: 'Royalty' },
+    { min: 30, emoji: '🦄', label: 'Mythical' },
+  ];
+
+  const STORAGE_KEY = 'getitdone-state';
+
+  let state = {
+    today: [],
+    stretch: [],
+    streak: 0,
+    lockedIds: [],
+    lastResetDate: null,
+    lastLockDate: null,
+  };
+
+  let ui = {
+    showInput: null,
+    newTaskText: '',
+    newTaskPriority: 3,
+    editingId: null,
+    editText: '',
+    editPriority: 3,
+    message: null,
+    draggedTask: null,
+  };
+
+  // ============ STORAGE ============
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state = { ...state, ...parsed };
+      }
+    } catch (e) {
+      console.error('Load failed:', e);
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error('Save failed:', e);
+    }
+  }
+
+  // ============ TIME EVENTS ============
+  function checkTimeBasedEvents() {
+    const now = new Date();
+    const hour = now.getHours();
+    const dateStr = now.toISOString().split('T')[0];
+
+    // 2am reset: if it's >=2am and we haven't done today's reset
+    if (hour >= 2 && state.lastResetDate !== dateStr) {
+      const lockedTasks = state.today.filter(t => state.lockedIds.includes(t.id));
+      const allLockedComplete = lockedTasks.length > 0 && lockedTasks.every(t => t.completed);
+      const someLockedIncomplete = lockedTasks.some(t => !t.completed);
+
+      if (lockedTasks.length > 0) {
+        if (allLockedComplete) {
+          state.streak += 1;
+        } else if (someLockedIncomplete) {
+          const useShame = Math.random() < 0.5;
+          const pool = useShame ? SHAME_MESSAGES : MOTIVATION_MESSAGES;
+          const text = pool[Math.floor(Math.random() * pool.length)];
+          ui.message = { text, type: useShame ? 'shame' : 'motivation' };
+          state.streak = 0;
+        }
+      }
+
+      // Remove completed tasks from both buckets
+      state.today = state.today.filter(t => !t.completed);
+      state.stretch = state.stretch.filter(t => !t.completed);
+      state.lockedIds = [];
+      state.lastResetDate = dateStr;
+      saveState();
+    }
+
+    // 9am lock: snapshot Today tasks
+    if (hour >= 9 && state.lastLockDate !== dateStr) {
+      state.lockedIds = state.today.map(t => t.id);
+      state.lastLockDate = dateStr;
+      saveState();
+    }
+  }
+
+  // ============ TASK LOGIC ============
+  function sortTasks(tasks) {
+    return [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a.priority !== b.priority) return b.priority - a.priority;
+      return a.createdAt - b.createdAt;
+    });
+  }
+
+  function incompleteCount(list) {
+    return list.filter(t => !t.completed).length;
+  }
+
+  function addTask(bucket) {
+    if (!ui.newTaskText.trim()) return;
+    const newTask = {
+      id: Date.now() + Math.random(),
+      text: ui.newTaskText.trim(),
+      priority: ui.newTaskPriority,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    if (bucket === 'today') {
+      const incomplete = state.today.filter(t => !t.completed);
+      if (incomplete.length >= 5) {
+        const lowest = [...incomplete].sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return b.createdAt - a.createdAt;
+        })[0];
+
+        if (newTask.priority > lowest.priority) {
+          state.today = state.today.filter(t => t.id !== lowest.id).concat(newTask);
+          state.stretch.push(lowest);
+        } else {
+          state.stretch.push(newTask);
+        }
+      } else {
+        state.today.push(newTask);
+      }
+    } else {
+      state.stretch.push(newTask);
+    }
+
+    ui.newTaskText = '';
+    ui.newTaskPriority = 3;
+    ui.showInput = null;
+    saveState();
+    render();
+  }
+
+  function promoteFromStretch() {
+    const incompleteToday = state.today.filter(t => !t.completed);
+    if (incompleteToday.length >= 5) return;
+
+    const incompleteStretch = state.stretch.filter(t => !t.completed);
+    if (incompleteStretch.length === 0) return;
+
+    const next = [...incompleteStretch].sort((a, b) => {
+      if (a.priority !== b.priority) return b.priority - a.priority;
+      return a.createdAt - b.createdAt;
+    })[0];
+
+    state.today.push(next);
+    state.stretch = state.stretch.filter(t => t.id !== next.id);
+  }
+
+  function toggleComplete(id, bucket) {
+    if (bucket === 'today') {
+      const task = state.today.find(t => t.id === id);
+      if (!task) return;
+      task.completed = !task.completed;
+      if (task.completed) {
+        promoteFromStretch();
+      }
+    } else {
+      const task = state.stretch.find(t => t.id === id);
+      if (task) task.completed = !task.completed;
+    }
+    saveState();
+    render();
+  }
+
+  function deleteTask(id, bucket) {
+    if (bucket === 'today') {
+      state.today = state.today.filter(t => t.id !== id);
+      state.lockedIds = state.lockedIds.filter(lid => lid !== id);
+      promoteFromStretch();
+    } else {
+      state.stretch = state.stretch.filter(t => t.id !== id);
+    }
+    saveState();
+    render();
+  }
+
+  function startEdit(task) {
+    ui.editingId = task.id;
+    ui.editText = task.text;
+    ui.editPriority = task.priority;
+    render();
+  }
+
+  function saveEdit(bucket) {
+    if (!ui.editText.trim()) return;
+    const list = bucket === 'today' ? state.today : state.stretch;
+    const task = list.find(t => t.id === ui.editingId);
+    if (task) {
+      task.text = ui.editText.trim();
+      task.priority = ui.editPriority;
+    }
+    ui.editingId = null;
+    ui.editText = '';
+    saveState();
+    render();
+  }
+
+  function moveTask(id, fromBucket) {
+    if (fromBucket === 'today') {
+      const task = state.today.find(t => t.id === id);
+      if (!task) return;
+      state.today = state.today.filter(t => t.id !== id);
+      state.stretch.push(task);
+      state.lockedIds = state.lockedIds.filter(lid => lid !== id);
+    } else {
+      const task = state.stretch.find(t => t.id === id);
+      if (!task) return;
+      const incomplete = state.today.filter(t => !t.completed);
+      if (incomplete.length >= 5) {
+        const lowest = [...incomplete].sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return b.createdAt - a.createdAt;
+        })[0];
+        if (task.priority > lowest.priority) {
+          state.today = state.today.filter(t => t.id !== lowest.id).concat(task);
+          state.stretch = state.stretch.filter(t => t.id !== id).concat(lowest);
+        } else {
+          // Can't move, priority not high enough
+          return;
+        }
+      } else {
+        state.stretch = state.stretch.filter(t => t.id !== id);
+        state.today.push(task);
+      }
+    }
+    saveState();
+    render();
+  }
+
+  function getStreakVisual() {
+    return [...STREAK_VISUALS].reverse().find(v => state.streak >= v.min);
+  }
+
+  // ============ RENDER ============
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function renderPriorityPicker(currentPriority, prefix) {
+    return `<div class="priority-picker">
+      ${[4,3,2,1].map(key => {
+        const p = PRIORITIES[key];
+        const active = currentPriority === key;
+        return `<div class="priority-option ${active ? 'active' : ''}"
+          style="color: ${p.color};"
+          onclick="setPriority('${prefix}', ${key})">
+          <span class="icon">${p.icon}</span>
+          <span>${escapeHtml(p.label)}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function renderInputRow(bucket) {
+    return `<div class="input-row">
+      <div class="input-line">
+        <input class="task-input" id="newTaskInput"
+          placeholder="${bucket === 'today' ? 'What needs doing?' : 'Add to the long list...'}"
+          value="${escapeHtml(ui.newTaskText)}"
+          oninput="ui.newTaskText = this.value"
+          onkeydown="if (event.key === 'Enter') addTask('${bucket}')">
+        <button class="submit-btn" onclick="addTask('${bucket}')">Add</button>
+        <button class="icon-btn" onclick="cancelInput()">✕</button>
+      </div>
+      ${renderPriorityPicker(ui.newTaskPriority, 'new')}
+    </div>`;
+  }
+
+  function renderEditRow(task, bucket) {
+    return `<div class="input-row">
+      <div class="input-line">
+        <input class="task-input" id="editInput"
+          value="${escapeHtml(ui.editText)}"
+          oninput="ui.editText = this.value"
+          onkeydown="if (event.key === 'Enter') saveEdit('${bucket}')">
+        <button class="submit-btn" onclick="saveEdit('${bucket}')">Save</button>
+        <button class="icon-btn" onclick="cancelEdit()">✕</button>
+      </div>
+      ${renderPriorityPicker(ui.editPriority, 'edit')}
+    </div>`;
+  }
+
+  function renderTaskRow(task, bucket) {
+    if (ui.editingId === task.id) {
+      return renderEditRow(task, bucket);
+    }
+    const P = PRIORITIES[task.priority];
+    const isLocked = state.lockedIds.includes(task.id) && !task.completed;
+    const moveLabel = bucket === 'today' ? '→ Stretch' : '→ Today';
+
+    return `<div class="task-row ${task.completed ? 'completed' : ''}"
+      draggable="${!task.completed}"
+      ondragstart="handleDragStart(event, ${task.id}, '${bucket}')"
+      ondragend="handleDragEnd()">
+      <div class="task-checkbox ${task.completed ? 'checked' : ''}"
+        onclick="toggleComplete(${task.id}, '${bucket}')">
+        ${task.completed ? '<span class="check-mark">✓</span>' : ''}
+      </div>
+      <div class="priority-badge" style="background: ${P.bg}; color: ${P.color};" title="${escapeHtml(P.label)}">
+        ${P.icon}
+      </div>
+      ${isLocked ? '<span class="task-locked">●</span>' : ''}
+      <span class="task-text">${escapeHtml(task.text)}</span>
+      <div class="task-actions">
+        <button class="move-btn" onclick="moveTask(${task.id}, '${bucket}')" title="Move bucket">${moveLabel}</button>
+        <button class="icon-btn" onclick="startEdit(${task.id}, '${bucket}')" title="Edit">✏️</button>
+        <button class="icon-btn" onclick="deleteTask(${task.id}, '${bucket}')" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }
+
+  function startEditById(id, bucket) {
+    const list = bucket === 'today' ? state.today : state.stretch;
+    const task = list.find(t => t.id === id);
+    if (task) startEdit(task);
+  }
+
+  function render() {
+    const sv = getStreakVisual();
+    const sortedToday = sortTasks(state.today);
+    const sortedStretch = sortTasks(state.stretch);
+
+    const messageOverlay = ui.message ? `
+      <div class="message-overlay" onclick="dismissMessage()">
+        <div class="message-card" onclick="event.stopPropagation()">
+          <p class="message-text">${escapeHtml(ui.message.text)}</p>
+          <button class="message-dismiss" onclick="dismissMessage()">
+            ${ui.message.type === 'shame' ? 'Ouch, fine' : "Let's go"}
+          </button>
+        </div>
+      </div>
+    ` : '';
+
+    document.getElementById('app').innerHTML = `
+      ${messageOverlay}
+      <div class="container">
+        <div class="header">
+          <h1 class="app-title">The List</h1>
+          <div><span class="streak-badge">
+            <span class="streak-emoji">${sv.emoji}</span>
+            <span>${state.streak} day streak · ${sv.label}</span>
+          </span></div>
+        </div>
+
+        <div class="notepad notepad-today" id="bucket-today"
+          ondragover="handleDragOver(event, 'today')"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event, 'today')">
+          <div class="notepad-header">
+            <h2 class="notepad-title">Today</h2>
+            <span class="counter">${incompleteCount(state.today)}/5 OPEN</span>
+          </div>
+          ${sortedToday.map(t => renderTaskRow(t, 'today')).join('')}
+          ${ui.showInput === 'today'
+            ? renderInputRow('today')
+            : `<div class="add-row" onclick="showInput('today')">+ add a task...</div>`}
+        </div>
+
+        <div class="notepad notepad-stretch" id="bucket-stretch"
+          ondragover="handleDragOver(event, 'stretch')"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event, 'stretch')">
+          <div class="notepad-header">
+            <h2 class="notepad-title">Stretch</h2>
+            <span class="counter">${incompleteCount(state.stretch)} OPEN</span>
+          </div>
+          ${sortedStretch.map(t => renderTaskRow(t, 'stretch')).join('')}
+          ${ui.showInput === 'stretch'
+            ? renderInputRow('stretch')
+            : `<div class="add-row" onclick="showInput('stretch')">+ add a task...</div>`}
+        </div>
+      </div>
+    `;
+
+    // Refocus input after render
+    if (ui.showInput) {
+      const input = document.getElementById('newTaskInput');
+      if (input && document.activeElement !== input) {
+        // Only focus if not already focused (avoids cursor jumping)
+        setTimeout(() => input.focus(), 0);
+      }
+    }
+    if (ui.editingId !== null) {
+      const input = document.getElementById('editInput');
+      if (input && document.activeElement !== input) {
+        setTimeout(() => input.focus(), 0);
+      }
+    }
+  }
+
+  // ============ EVENT HANDLERS (exposed globally) ============
+  window.ui = ui;
+
+  window.toggleComplete = toggleComplete;
+  window.deleteTask = deleteTask;
+  window.moveTask = moveTask;
+  window.addTask = addTask;
+  window.saveEdit = saveEdit;
+
+  window.startEdit = (id, bucket) => startEditById(id, bucket);
+
+  window.setPriority = (mode, value) => {
+    if (mode === 'new') ui.newTaskPriority = value;
+    else ui.editPriority = value;
+    render();
+  };
+
+  window.showInput = (bucket) => {
+    ui.showInput = bucket;
+    ui.newTaskText = '';
+    ui.newTaskPriority = 3;
+    render();
+  };
+
+  window.cancelInput = () => {
+    ui.showInput = null;
+    ui.newTaskText = '';
+    render();
+  };
+
+  window.cancelEdit = () => {
+    ui.editingId = null;
+    ui.editText = '';
+    render();
+  };
+
+  window.dismissMessage = () => {
+    ui.message = null;
+    render();
+  };
+
+  // Drag and drop
+  window.handleDragStart = (e, id, bucket) => {
+    const list = bucket === 'today' ? state.today : state.stretch;
+    const task = list.find(t => t.id === id);
+    ui.draggedTask = { task, bucket };
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  window.handleDragEnd = () => {
+    ui.draggedTask = null;
+    document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active'));
+  };
+
+  window.handleDragOver = (e, bucket) => {
+    e.preventDefault();
+    document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active'));
+    document.getElementById('bucket-' + bucket).classList.add('drop-zone-active');
+  };
+
+  window.handleDragLeave = (e) => {
+    // Only remove if leaving the bucket entirely
+  };
+
+  window.handleDrop = (e, targetBucket) => {
+    e.preventDefault();
+    document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active'));
+    if (!ui.draggedTask) return;
+    if (ui.draggedTask.bucket === targetBucket) {
+      ui.draggedTask = null;
+      return;
+    }
+    moveTask(ui.draggedTask.task.id, ui.draggedTask.bucket);
+    ui.draggedTask = null;
+  };
+
+  // ============ INIT ============
+  loadState();
+  checkTimeBasedEvents();
+  render();
+  setInterval(checkTimeBasedEvents, 60000);
+
+  // Re-check time events when app comes back from background
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      checkTimeBasedEvents();
+      render();
+    }
+  });
+</script>
+
+</body>
+</html>
